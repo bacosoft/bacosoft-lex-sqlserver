@@ -21,7 +21,7 @@ public partial class StoredProcedures
     /// <param name="error">Código de error. El valor 0 significa que la petición ha sido existosa.</param>
     /// <param name="response">Texto con el resultado codificado en un XML.</param>
     [Microsoft.SqlServer.Server.SqlProcedure]
-    public static void BacolexQuery(string baseUrl, string tenant, string userName, string password, string resource, string parameters, out int error, out string response)
+    public static void Query(string baseUrl, string tenant, string userName, string password, string resource, string parameters, out int error, out string response)
     {
         GetResponse(baseUrl + resource, tenant, userName, password, parameters, out error, out response);
     }
@@ -41,7 +41,7 @@ public partial class StoredProcedures
     /// es necesario analizar la respuesta para saber si todos los datos fueron importados.</param>
     /// <param name="response">Texto con el resultado de la validación o importación codificado en un XML.</param>
     [Microsoft.SqlServer.Server.SqlProcedure]
-    public static void BacolexImport(string baseUrl, string tenant, string userName, string password, long? idEmpresa, long? idEstablecimiento, string data, bool validate, out int error, out string response)
+    public static void Import(string baseUrl, string tenant, string userName, string password, long? idEmpresa, long? idEstablecimiento, string data, bool validate, out int error, out string response)
     {
         string elemEmpresa = string.Empty;
         if (idEmpresa.HasValue)
@@ -56,6 +56,42 @@ public partial class StoredProcedures
         data = SecurityElement.Escape(data);
         string body = $@"<ImportDataParameters>{elemEmpresa}{elemEstablecimiento}<data>{data}</data><validate>{validate}</validate></ImportDataParameters>";
         GetResponse(baseUrl + IMPORT, tenant, userName, password, body, out error, out response);
+    }
+
+    /// <summary>
+    /// Procedimiento para realizar consultas a la web API de Bacosoft LEX.
+    /// Se mantiene por compatibilidad hacia atrás con instalaciones existentes.
+    /// </summary>
+    /// <param name="baseUrl">La URL del servidor con el cual trabajar.</param>
+    /// <param name="tenant">El código de la base de datos.</param>
+    /// <param name="userName">Nombre de usuario.</param>
+    /// <param name="password">Contraseña.</param>
+    /// <param name="resource">El recurso que estamos consultando. Ejemplo: <code>/lex/api/pais/query</code>.</param>
+    /// <param name="parameters">Texto con los parámetros de la consulta codificados en un XML. Ejemplo: <code>&lt;FindParameters&gt;&lt;projection&gt;detail&lt;/projection&gt;&lt;/FindParameters&gt;</code>.</param>
+    /// <param name="response">Texto con el resultado codificado en un XML.</param>
+    [Microsoft.SqlServer.Server.SqlProcedure]
+    public static void BacolexQuery(string baseUrl, string tenant, string userName, string password, string resource, string parameters, out string response)
+    {
+        Query(baseUrl, tenant, userName, password, resource, parameters, out _, out response);
+    }
+
+    /// <summary>
+    /// Procedimiento para importar datos dentro de Bacosoft LEX utilizando la web API.
+    /// Se mantiene por compatibilidad hacia atrás con instalaciones existentes.
+    /// </summary>
+    /// <param name="baseUrl">La URL del servidor con el cual trabajar.</param>
+    /// <param name="tenant">El código de la base de datos.</param>
+    /// <param name="userName">Nombre de usuario.</param>
+    /// <param name="password">Contraseña.</param>
+    /// <param name="idEmpresa">Identificador de la empresa.</param>
+    /// <param name="idEstablecimiento">Identificador del establecimiento</param>
+    /// <param name="data">Texto con los datos a importar codificados en un XML.</param>
+    /// <param name="validate">true para solo validar los datos a importar; false para importarlos.</param>
+    /// <param name="response">Texto con el resultado de la validación o importación codificado en un XML.</param>
+    [Microsoft.SqlServer.Server.SqlProcedure]
+    public static void BacolexImport(string baseUrl, string tenant, string userName, string password, long? idEmpresa, long? idEstablecimiento, string data, bool validate, out string response)
+    {
+        Import(baseUrl, tenant, userName, password, idEmpresa, idEstablecimiento, data, validate, out _, out response);
     }
 
     private static void GetResponse(string url, string tenant, string userName, string password, string body, out int error, out string respuesta)
@@ -84,7 +120,7 @@ public partial class StoredProcedures
     {
         // caso genérico
         error = -100;
-        respuesta = e.Message;
+        respuesta = e.Message + "\n" + e.StackTrace;
 
         if (e is WebException webEx)
         {

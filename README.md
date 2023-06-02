@@ -22,12 +22,12 @@ GO
 
 CREATE PROCEDURE [dbo].[BacolexQuery]
 @baseUrl NVARCHAR (MAX) NULL, @tenant NVARCHAR (MAX) NULL, @userName NVARCHAR (MAX) NULL, @password NVARCHAR (MAX) NULL, @resource NVARCHAR (MAX) NULL, @parameters NVARCHAR (MAX) NULL, @error INT NULL OUTPUT, @response NVARCHAR (MAX) NULL OUTPUT
-AS EXTERNAL NAME [bacosoft_lex_sqlserver].[StoredProcedures].[BacolexQuery]
+AS EXTERNAL NAME [bacosoft_lex_sqlserver].[StoredProcedures].[Query]
 GO
 
 CREATE PROCEDURE [dbo].[BacolexImport]
 @baseUrl NVARCHAR (MAX) NULL, @tenant NVARCHAR (MAX) NULL, @userName NVARCHAR (MAX) NULL, @password NVARCHAR (MAX) NULL, @idEmpresa BIGINT NULL, @idEstablecimiento BIGINT NULL, @data NVARCHAR (MAX) NULL, @validate BIT NULL, @error INT NULL OUTPUT, @response NVARCHAR (MAX) NULL OUTPUT
-AS EXTERNAL NAME [bacosoft_lex_sqlserver].[StoredProcedures].[BacolexImport]
+AS EXTERNAL NAME [bacosoft_lex_sqlserver].[StoredProcedures].[Import]
 GO
 ```
 
@@ -37,6 +37,38 @@ CREATE ASSEMBLY [bacosoft_lex_sqlserver]
     AUTHORIZATION [dbo]
     FROM 0x4D5A90000300000004000000FFFF0000B8...
     WITH PERMISSION_SET = EXTERNAL_ACCESS;
+```
+
+### Actualización en instalaciones legadas
+
+Estas instrucciones aplican en aquellas instalaciones donde se utilizaban los procedimientos almacenados que no devolvían código de error numérico.
+
+Es necesario eliminar el assembly y procedimientos almacenados originales y volverlos a crear:
+```
+DROP PROCEDURE [dbo].[BacolexQuery]
+GO
+
+DROP PROCEDURE [dbo].[BacolexImport]
+GO
+
+DROP ASSEMBLY [bacolex]
+GO
+
+CREATE ASSEMBLY [bacolex]
+    AUTHORIZATION [dbo]
+    FROM 'c:\algunaCarpeta\bacosoft_lex_sqlserver.dll'
+    WITH PERMISSION_SET = EXTERNAL_ACCESS;
+GO
+
+CREATE PROCEDURE [dbo].[BacolexQuery]
+@baseUrl NVARCHAR (MAX), @tenant NVARCHAR (MAX), @userName NVARCHAR (MAX), @password NVARCHAR (MAX), @recurso NVARCHAR (MAX), @parametros NVARCHAR (MAX), @respuesta NVARCHAR (MAX) OUTPUT
+AS EXTERNAL NAME [bacolex].[StoredProcedures].[BacolexQuery]
+GO
+
+CREATE PROCEDURE [dbo].[BacolexImport]
+@baseUrl NVARCHAR (MAX), @tenant NVARCHAR (MAX), @userName NVARCHAR (MAX), @password NVARCHAR (MAX), @idEmpresa BIGINT, @idEstablecimiento BIGINT, @datos NVARCHAR (MAX), @validar BIT, @respuesta NVARCHAR (MAX) OUTPUT
+AS EXTERNAL NAME [bacolex].[StoredProcedures].[BacolexImport]
+GO
 ```
 
 ## Ejemplo de uso

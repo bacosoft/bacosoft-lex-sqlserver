@@ -5,6 +5,11 @@ VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "bacosoft-lex-sqlserver", "bacosoft-lex-sqlserver\bacosoft-lex-sqlserver.sqlproj", "{1E3FD4D1-2DC3-4FD0-BC5F-FEA51A78EEA3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{785590D5-F2CB-4F16-9887-5E1E293B7D3A}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
